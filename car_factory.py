@@ -9,14 +9,17 @@ from datetime import datetime
 import engine.capulet_engine
 import engine.sternman_engine
 import engine.willoughby_engine
+import tire.carrigan
+import tire.octoprime
 
 class CarFactory(ABC):
-  def __init__(self, last_service_date, current_mileage, last_service_mileage, warning_light_is_on):
+  def __init__(self, last_service_date, current_mileage, last_service_mileage, warning_light_is_on, tire_condition):
     self.current_date = datetime.today().date()
     self.last_service_date = last_service_date
     self.current_mileage = current_mileage
     self.last_service_mileage = last_service_mileage
     self.warning_light_is_on = warning_light_is_on
+    self.tire_condition = tire_condition
 
   def create_calliope(self):
     eng = engine.capulet_engine.CapuletEngine(self.current_mileage, self.last_service_mileage)

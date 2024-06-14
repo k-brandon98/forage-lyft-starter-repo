@@ -1,0 +1,107 @@
+import unittest
+from datetime import datetime, timedelta
+from unittest.mock import Mock
+from engine.capulet_engine import CapuletEngine
+from engine.sternman_engine import SternmanEngine
+from engine.willoughby_engine import WilloughbyEngine
+from battery.spindler_battery import SpindlerBattery
+from battery.nubbin_battery import NubbinBattery
+from tire.carrigan import Carrigan
+from tire.octoprime import Octoprime
+from car import Car
+
+class TestEngine(unittest.TestCase):
+    def test_capulet_engine_should_be_serviced(self):
+        engine = CapuletEngine(current_mileage=50000, last_service_mileage=20000)
+        self.assertTrue(engine.engine_should_be_serviced())
+
+        engine = CapuletEngine(current_mileage=25000, last_service_mileage=20000)
+        self.assertFalse(engine.engine_should_be_serviced())
+
+    def test_sternman_engine_should_be_serviced(self):
+        engine = SternmanEngine(warning_light_is_on=True)
+        self.assertTrue(engine.engine_should_be_serviced())
+
+        engine = SternmanEngine(warning_light_is_on=False)
+        self.assertFalse(engine.engine_should_be_serviced())
+
+    def test_willoughby_engine_should_be_serviced(self):
+        engine = WilloughbyEngine(current_mileage=70000, last_service_mileage=10000)
+        self.assertTrue(engine.engine_should_be_serviced())
+
+        engine = WilloughbyEngine(current_mileage=35000, last_service_mileage=10000)
+        self.assertFalse(engine.engine_should_be_serviced())
+
+class TestBattery(unittest.TestCase):
+    def test_spindler_battery_needs_service(self):
+        last_service_date = datetime.now().date() - timedelta(days=1200)
+        battery = SpindlerBattery(last_service_date=last_service_date)
+        self.assertTrue(battery.needs_service())
+
+        last_service_date = datetime.now().date() - timedelta(days=100)
+        battery = SpindlerBattery(last_service_date=last_service_date)
+        self.assertFalse(battery.needs_service())
+
+    def test_nubbin_battery_needs_service(self):
+        last_service_date = datetime.now().date() - timedelta(days=1600)
+        battery = NubbinBattery(last_service_date=last_service_date)
+        self.assertTrue(battery.needs_service())
+
+        last_service_date = datetime.now().date() - timedelta(days=100)
+        battery = NubbinBattery(last_service_date=last_service_date)
+        self.assertFalse(battery.needs_service())
+
+class TestTire(unittest.TestCase):
+    def test_octoprime_tire(self):
+        arr1 = [1,1,1,1]
+        arr2 = [0.1,0.2,0.3,0.4]
+
+        tire1 = Octoprime(arr1)
+        self.assertTrue(tire1.needs_service())
+
+        tire2 = Octoprime(arr2)
+        self.assertFalse(tire2.needs_service())
+
+    def test_carrigan_tire(self):
+        arr1 = [1,0.1,0,1]
+        arr2 = [0.1,0.2,0.3,0.4]
+
+        tire1 = Carrigan(arr1)
+        self.assertTrue(tire1.needs_service())
+
+        tire2 = Carrigan(arr2)
+        self.assertFalse(tire2.needs_service())
+
+class TestCar(unittest.TestCase):
+    def test_car_needs_service(self):
+        # Mock engine and battery
+        mock_engine = Mock()
+        mock_battery = Mock()
+
+        # Test case where both engine and battery need service
+        mock_engine.engine_should_be_serviced.return_value = True
+        mock_battery.needs_service.return_value = True
+        car = Car(mock_engine, mock_battery)
+        self.assertTrue(car.needs_service())
+
+        # Test case where only engine needs service
+        mock_engine.engine_should_be_serviced.return_value = True
+        mock_battery.needs_service.return_value = False
+        car = Car(mock_engine, mock_battery)
+        self.assertTrue(car.needs_service())
+
+        # Test case where only battery needs service
+        mock_engine.engine_should_be_serviced.return_value = False
+        mock_battery.needs_service.return_value = True
+        car = Car(mock_engine, mock_battery)
+        self.assertTrue(car.needs_service())
+
+        # Test case where neither needs service
+        mock_engine.engine_should_be_serviced.return_value = False
+        mock_battery.needs_service.return_value = False
+        car = Car(mock_engine, mock_battery)
+        self.assertFalse(car.needs_service())
+
+if __name__ == '__main__':
+    unittest.main()
+
